@@ -7,10 +7,28 @@
 
 import SwiftUI
 
+class AppSettings: ObservableObject {
+    @Published var mutliplicationRange = 7.0
+    @Published var numberOfQuestions = 10.0
+}
+
 struct ContentView: View {
+    @StateObject private var appSettings = AppSettings()
+
     var body: some View {
-        Text("Hello, world!")
-            .padding()
+        TabView {
+            QuestionsView()
+                .tabItem {
+                    Label("Questions", systemImage: "questionmark")
+                }
+                .environmentObject(appSettings)
+            
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .environmentObject(appSettings)
+        }
     }
 }
 
