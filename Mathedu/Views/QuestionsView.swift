@@ -10,47 +10,60 @@ import SwiftUI
 struct QuestionsView: View {
     @EnvironmentObject var appSettings: AppSettings
     @FocusState private var userAnswerIsFocused: Bool
-    @State private var score = 0
-    @State private var firstRandomNumber = Int.random(in: 2...Int(AppSettings().mutliplicationRange))
-    @State private var secondRandomNumber = Int.random(in: 2...Int(AppSettings().mutliplicationRange))
-    @State private var userAnswer = ""
-    @State private var questionNumber = 1
     @State private var endGameState = false
     
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    HStack {
-                        Text("\(firstRandomNumber) * \(secondRandomNumber) =")
-                            .fontWeight(.bold)
-                        TextField("?", text: $userAnswer)
-                            .keyboardType(.decimalPad)
-                            .focused($userAnswerIsFocused)
-                    }
-                    
-                    Button {
-                        calculate()
-                    } label: {
-                        Text("Check")
-                            .frame(maxWidth: .infinity, alignment: .center)
+                    if !appSettings.operations.isEmpty {
+                        HStack {
+                            switch appSettings.randomOperation {
+                            case "*":
+                                Text("\(appSettings.firstRandomNumber) * \(appSettings.secondRandomNumber) =")
+                            case "/":
+                                Text("\(appSettings.firstRandomNumber) / \(appSettings.secondRandomNumber) =")
+                            case "+":
+                                Text("\(appSettings.firstRandomNumber) + \(appSettings.secondRandomNumber) =")
+                            case "-":
+                                Text("\(appSettings.firstRandomNumber) - \(appSettings.secondRandomNumber) =")
+                            default:
+                                Text("")
+                            }
+                            
+                            TextField("?", text: $appSettings.userAnswer)
+                                .keyboardType(.decimalPad)
+                                .focused($userAnswerIsFocused)
+                        }
+                        
+                        Button {
+                            calculate()
+                        } label: {
+                            Text("Check")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                    } else {
+                        Text("No operations chosen. Check your settings.")
+                            .padding()
                     }
                 } header: {
-                    Text("Question \(questionNumber)/\(appSettings.numberOfQuestions.formatted())")
+                    Text("Question \(appSettings.questionNumber)/\(appSettings.numberOfQuestions.formatted())")
                 }
+                .onAppear(perform: appSettings.assignOperations)
+                .onAppear(perform: assignRandomOperation)
             }
             .navigationTitle("Mathedu")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Text("Score: \(score)")
+                    Text("Score: \(appSettings.score)")
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        restartApp()
+                        appSettings.restartApp()
                     } label: {
                         Image(systemName: "gobackward")
-
+                        
                     }
                 }
                 
@@ -70,39 +83,71 @@ struct QuestionsView: View {
             .alert (isPresented: $endGameState) {
                 Alert(
                     title: Text("That was the last question"),
-                    message: Text("You got \(score) score!"),
-                    dismissButton: .default(Text("Restart"), action: restartApp)
+                    message: Text("You got \(appSettings.score) score!"),
+                    dismissButton: .default(Text("Restart"), action: appSettings.restartApp)
                 )
             }
         }
     }
     
     func calculate() {
-        let result = firstRandomNumber * secondRandomNumber
+        var result = 0
         
-        withAnimation {
-            score = { Int(userAnswer) == result ? score + 1 : score + 0 }()
-            firstRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
-            secondRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
-            questionNumber += 1
-            userAnswer = ""
+        switch appSettings.randomOperation {
+        case "*":
+            result = appSettings.firstRandomNumber * appSettings.secondRandomNumber
+        case "/":
+            result = appSettings.firstRandomNumber / appSettings.secondRandomNumber
+        case "+":
+            result = appSettings.firstRandomNumber + appSettings.secondRandomNumber
+        case "-":
+            result = appSettings.firstRandomNumber - appSettings.secondRandomNumber
+        default:
+            result = 0
         }
         
-        if questionNumber > Int(appSettings.numberOfQuestions) {
-            questionNumber = Int(appSettings.numberOfQuestions)
+        assignRandomOperation()
+        
+        withAnimation {
+            appSettings.score = { Int(appSettings.userAnswer) == result ? appSettings.score + 1 : appSettings.score + 0 }()
+            
+            appSettings.firstRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+            appSettings.secondRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+            
+            if appSettings.randomOperation == "/" {
+                while appSettings.firstRandomNumber % appSettings.secondRandomNumber != 0 {
+                    appSettings.firstRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+                    appSettings.secondRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+                }
+            } else if appSettings.randomOperation == "*" {
+                appSettings.firstRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
+                appSettings.secondRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
+            }
+            
+            appSettings.questionNumber += 1
+            appSettings.userAnswer = ""
+        }
+        
+        if appSettings.questionNumber > Int(appSettings.numberOfQuestions) {
+            appSettings.questionNumber = Int(appSettings.numberOfQuestions)
             endGameState = true
             userAnswerIsFocused = false
             return
         }
     }
     
-    func restartApp() {
-        score = 0
-        questionNumber = 1
-        firstRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
-        secondRandomNumber = Int.random(in: 2...Int(appSettings.mutliplicationRange))
-        userAnswer = ""
-        userAnswerIsFocused = false
+    func assignRandomOperation() {
+        appSettings.randomOperation = appSettings.operations.randomElement() ?? ""
+        
+        if appSettings.randomOperation == "/" {
+            print("IS DIVISON")
+            while appSettings.firstRandomNumber % appSettings.secondRandomNumber != 0 {
+                print("finding")
+                appSettings.firstRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+                appSettings.secondRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
+                print("found: \(appSettings.firstRandomNumber) and \(appSettings.secondRandomNumber)")
+            }
+        }
     }
 }
 

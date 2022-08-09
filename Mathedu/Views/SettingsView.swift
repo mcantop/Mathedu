@@ -9,43 +9,77 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var appSettings: AppSettings
+    
     @State private var isEditing = false
+    @State private var disableSlider = true
     
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    VStack {
-                        Text("Multiplication: 2 - \(appSettings.mutliplicationRange.formatted())")
-                        Slider(value: $appSettings.mutliplicationRange, in: 2...12, step: 1) {
-                        } minimumValueLabel: {
-                            Text("2")
-                        } maximumValueLabel: {
-                            Text("12")
-                        } onEditingChanged: { editing in
-                            isEditing = editing
-                        }
+                    Slider(value: $appSettings.numberOfQuestions, in: 5...15, step: 1) {
+                    } minimumValueLabel: {
+                        Text("5")
+                    } maximumValueLabel: {
+                        Text("15")
+                    } onEditingChanged: { editing in
+                        isEditing = editing
+                        appSettings.restartApp()
                     }
-                    .padding()
-                    VStack {
-                        Section {
-                            Text("Questions: \(appSettings.numberOfQuestions.formatted())")
-                            Slider(value: $appSettings.numberOfQuestions, in: 5...15, step: 1) {
-                            } minimumValueLabel: {
-                                Text("5")
-                            } maximumValueLabel: {
-                                Text("15")
-                            } onEditingChanged: { editing in
-                                isEditing = editing
-                            }
-                        }
-                    }
-                    .padding()
+                    .padding(5)
                 } header: {
-                    Text("Settings")
+                    Text("Questions: \(appSettings.numberOfQuestions.formatted())")
                 }
                 
-
+                Section {
+                    Toggle("Addition", isOn: $appSettings.additionOn)
+                    Toggle("Subtraction", isOn: $appSettings.subtractionOn)
+                    Toggle("Multiplication", isOn: $appSettings.multiplicationOn)
+                    Toggle("Division", isOn: $appSettings.divisionOn)
+                } header: {
+                    Text("Operations")
+                }
+                .onChange(of: appSettings.multiplicationOn) { newValue in
+                    if appSettings.multiplicationOn == true {
+                        disableSlider = true
+                    } else if appSettings.multiplicationOn == false {
+                        disableSlider = false
+                    }
+                }
+                .onAppear(perform: appSettings.restartApp)
+                .toggleStyle(.switch)
+                
+                Section {
+                    Slider(value: $appSettings.numbersRange, in: 100...200, step: 5) {
+                    } minimumValueLabel: {
+                        Text("100")
+                    } maximumValueLabel: {
+                        Text("200")
+                    } onEditingChanged: { editing in
+                        isEditing = editing
+                        appSettings.restartApp()
+                    }
+                    .padding(5)
+                } header: {
+                    Text("Numbers range: 100 - \(appSettings.numbersRange.formatted())")
+                }
+                
+                Section {
+                    Slider(value: $appSettings.mutliplicationRange, in: 5...20, step: 1) {
+                    } minimumValueLabel: {
+                        Text("2")
+                    } maximumValueLabel: {
+                        Text("20")
+                    } onEditingChanged: { editing in
+                        isEditing = editing
+                        appSettings.restartApp()
+                    }
+                    .padding(5)
+                } header: {
+                    Text("Multiplication range: 2 - \(appSettings.mutliplicationRange.formatted())")
+                }
+                .disabled(!disableSlider)
+                
             }
             .navigationTitle("Mathedu")
         }
