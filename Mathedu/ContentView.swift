@@ -10,7 +10,7 @@ import SwiftUI
 class AppSettings: ObservableObject {
     @Published var operations = [String]()
     @Published var numbersRange = 150.0
-    @Published var mutliplicationRange = 13.0
+    @Published var mutliplicationRange = 10.0
     @Published var numberOfQuestions = 10.0
     @Published var randomOperation = ""
     
@@ -30,17 +30,17 @@ class AppSettings: ObservableObject {
         score = 0
         questionNumber = 1
         
-        firstRandomNumber = Int.random(in: 2...Int(numbersRange))
-        secondRandomNumber = Int.random(in: 2...Int(numbersRange))
+        firstRandomNumber = Int.random(in: 0...Int(numbersRange))
+        secondRandomNumber = Int.random(in: 0...Int(numbersRange))
         
         if randomOperation == "/" {
             while firstRandomNumber % secondRandomNumber != 0 {
-                firstRandomNumber = Int.random(in: 2...Int(numbersRange))
-                secondRandomNumber = Int.random(in: 2...Int(numbersRange))
+                firstRandomNumber = Int.random(in: 1...Int(numbersRange))
+                secondRandomNumber = Int.random(in: 1...Int(numbersRange))
             }
         } else if randomOperation == "*" {
-            firstRandomNumber = Int.random(in: 2...Int(mutliplicationRange))
-            secondRandomNumber = Int.random(in: 2...Int(mutliplicationRange))
+            firstRandomNumber = Int.random(in: 0...Int(mutliplicationRange))
+            secondRandomNumber = Int.random(in: 0...Int(mutliplicationRange))
         }
 
         userAnswer = ""

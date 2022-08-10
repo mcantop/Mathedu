@@ -11,7 +11,6 @@ struct SettingsView: View {
     @EnvironmentObject var appSettings: AppSettings
     
     @State private var isEditing = false
-    @State private var disableSlider = true
     
     var body: some View {
         NavigationView {
@@ -39,13 +38,6 @@ struct SettingsView: View {
                 } header: {
                     Text("Operations")
                 }
-                .onChange(of: appSettings.multiplicationOn) { newValue in
-                    if appSettings.multiplicationOn == true {
-                        disableSlider = true
-                    } else if appSettings.multiplicationOn == false {
-                        disableSlider = false
-                    }
-                }
                 .onAppear(perform: appSettings.restartApp)
                 .toggleStyle(.switch)
                 
@@ -61,13 +53,13 @@ struct SettingsView: View {
                     }
                     .padding(5)
                 } header: {
-                    Text("Numbers range: 100 - \(appSettings.numbersRange.formatted())")
+                    Text("Numbers range: 0 - \(appSettings.numbersRange.formatted())")
                 }
                 
                 Section {
-                    Slider(value: $appSettings.mutliplicationRange, in: 5...20, step: 1) {
+                    Slider(value: $appSettings.mutliplicationRange, in: 0...20, step: 1) {
                     } minimumValueLabel: {
-                        Text("2")
+                        Text("0")
                     } maximumValueLabel: {
                         Text("20")
                     } onEditingChanged: { editing in
@@ -76,10 +68,8 @@ struct SettingsView: View {
                     }
                     .padding(5)
                 } header: {
-                    Text("Multiplication range: 2 - \(appSettings.mutliplicationRange.formatted())")
+                    Text("Multiplication range: 0 - \(appSettings.mutliplicationRange.formatted())")
                 }
-                .disabled(!disableSlider)
-                
             }
             .navigationTitle("Mathedu")
         }

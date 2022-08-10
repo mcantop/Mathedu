@@ -11,12 +11,14 @@ struct QuestionsView: View {
     @EnvironmentObject var appSettings: AppSettings
     @FocusState private var userAnswerIsFocused: Bool
     @State private var endGameState = false
+    @State private var showingAlert = false
     
     var body: some View {
         NavigationView {
             Form {
                 Section {
                     if !appSettings.operations.isEmpty {
+                        
                         HStack {
                             switch appSettings.randomOperation {
                             case "*":
@@ -60,10 +62,21 @@ struct QuestionsView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        appSettings.restartApp()
+                        showingAlert = true
                     } label: {
                         Image(systemName: "gobackward")
                         
+                    }
+                    .alert(isPresented: $showingAlert) {
+                        Alert(
+                            title: Text("Restart"),
+                            message: Text("Do you want to restart?"),
+                            primaryButton: .cancel(Text("Back")),
+                            secondaryButton: .destructive(
+                            Text("Restart"),
+                            action: appSettings.restartApp
+                            )
+                            )
                     }
                 }
                 
@@ -140,12 +153,10 @@ struct QuestionsView: View {
         appSettings.randomOperation = appSettings.operations.randomElement() ?? ""
         
         if appSettings.randomOperation == "/" {
-            print("IS DIVISON")
             while appSettings.firstRandomNumber % appSettings.secondRandomNumber != 0 {
-                print("finding")
-                appSettings.firstRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
-                appSettings.secondRandomNumber = Int.random(in: 2...Int(appSettings.numbersRange))
-                print("found: \(appSettings.firstRandomNumber) and \(appSettings.secondRandomNumber)")
+                appSettings.firstRandomNumber = Int.random(in: 1...Int(appSettings.numbersRange))
+                appSettings.secondRandomNumber = Int.random(in: 1...Int(appSettings.numbersRange))
+
             }
         }
     }
